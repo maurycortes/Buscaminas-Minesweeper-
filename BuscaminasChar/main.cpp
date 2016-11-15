@@ -1,42 +1,49 @@
+//Autor: Mauricio Cortes
+//Fecha: 15/11/2016
+//Version 0.1
+//Contacto: abmaury97@hotmail.com
+
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
-#define N 8
+#include <string>
+#define M 8 // Renglones
+#define N 8 // Columnas
 #define Bombas 10
 
 using namespace std;
 int iIntentos=0;
 
-void InicializarMatrices(int iMatBuscaminas[N][N], char iMatJugador[N][N], bool iMatRecorridos[N][N])
+void InicializarMatrices(int iMatBuscaminas[M][N], char iMatJugador[M][N], bool iMatRecorridos[M][N])
 {
-    for(int i=0; i<N; i++)
+    for(int i=0; i<M; i++)
         for(int j=0; j<N; j++)
             iMatBuscaminas[i][j] = 0;
-    for(int i=0; i<N; i++)
+    for(int i=0; i<M; i++)
         for(int j=0; j<N; j++)
             iMatJugador[i][j] = '-';
-    for(int i=0; i<N; i++)
+    for(int i=0; i<M; i++)
         for(int j=0; j<N; j++)
             iMatRecorridos[i][j] = false;
 }
 
-void SumarAlrededor(int iMatBuscaminas[N][N], int iRandomRow, int iRandomCol)
+void SumarAlrededor(int iMatBuscaminas[M][N], int iRandomRow, int iRandomCol)
 {
     for(int i = iRandomRow-1; i <= iRandomRow+1; i++)
         for(int j = iRandomCol-1; j <= iRandomCol+1; j++)
-            if(i >= 0 && i < N && j >= 0 && j < N)
+            if(i >= 0 && i < M && j >= 0 && j < N)
                 if(iMatBuscaminas[i][j] != -1)
                     iMatBuscaminas[i][j] += 1;
 }
 
-void GenerarMinasRandom(int iMatBuscaminas[N][N])
+void GenerarMinasRandom(int iMatBuscaminas[M][N])
 {
     srand(time(NULL));
     int iRandomRow, iRandomCol;
     int iMinas = Bombas;
     while(iMinas>0)
     {
-        iRandomRow = rand()%N; // Rango de 0 a 7
+        iRandomRow = rand()%M; // Rango de 0 a 7
         iRandomCol = rand()%N; // Rango de 0 a 7
         if(iMatBuscaminas[iRandomRow][iRandomCol] == 0) // Verificar que no haya una mina ya en esa posicion
         {
@@ -48,14 +55,19 @@ void GenerarMinasRandom(int iMatBuscaminas[N][N])
 }
 
 template<typename T>
-void ImprimirMatriz(T iMat[N][N])
+void ImprimirMatriz(T iMat[M][N])
 {
+    string linea="--", numerosArriba=" X |    ";
+    for(int i=0; i<N; i++)
+        linea += "--------";
 
     cout << "                             TABLERO" << endl;
-    cout << "------------------------------------------------------------------" << endl;
-    cout << " X |    1       2       3       4       5       6       7       8 " << endl;
-    cout << "------------------------------------------------------------------" << endl;
-    for(int i=0; i<N; i++)
+    cout << linea << endl;
+    cout << numerosArriba;
+    for(int i=1; i<=N; i++)
+        cout << i << "       ";
+    cout << endl << linea << endl;
+    for(int i=0; i<M; i++)
     {
         cout << " " << i+1 << " |    ";
         for(int j=0; j<N; j++)
@@ -64,9 +76,9 @@ void ImprimirMatriz(T iMat[N][N])
     }
 }
 
-void Ataque(char iMatJugador[N][N], int iMatBuscaminas[N][N], bool iRecorridos[N][N], int &iIntentos, int iRenAtaque, int iColAtaque)
+void Ataque(char iMatJugador[M][N], int iMatBuscaminas[M][N], bool iRecorridos[M][N], int &iIntentos, int iRenAtaque, int iColAtaque)
 {
-    if(iRenAtaque>=0 && iRenAtaque<8 && iColAtaque>=0 && iColAtaque<8 && iRecorridos[iRenAtaque][iColAtaque] == false)
+    if(iRenAtaque>=0 && iRenAtaque<M && iColAtaque>=0 && iColAtaque<N && iRecorridos[iRenAtaque][iColAtaque] == false)
     {
         if(iMatBuscaminas[iRenAtaque][iColAtaque] == 0)
         {
@@ -76,7 +88,7 @@ void Ataque(char iMatJugador[N][N], int iMatBuscaminas[N][N], bool iRecorridos[N
 
             for(int i = iRenAtaque-1; i <= iRenAtaque+1; i++)
                 for(int j = iColAtaque-1; j <= iColAtaque+1; j++)
-                    if(i >= 0 && i < 8 && j >= 0 && j < 8)
+                    if(i >= 0 && i < M && j >= 0 && j < N)
                         Ataque(iMatJugador, iMatBuscaminas, iRecorridos, iIntentos, i, j);
         }
         else
@@ -88,7 +100,7 @@ void Ataque(char iMatJugador[N][N], int iMatBuscaminas[N][N], bool iRecorridos[N
     }
 }
 
-void Marcar(char iMatJugador[N][N], bool iRecorridos[N][N], int iRenMarca, int iColMarca)
+void Marcar(char iMatJugador[M][N], bool iRecorridos[M][N], int iRenMarca, int iColMarca)
 {
     if(iRecorridos[iRenMarca][iColMarca] == false)
     {
@@ -100,13 +112,13 @@ void Marcar(char iMatJugador[N][N], bool iRecorridos[N][N], int iRenMarca, int i
     system("cls");
 }
 
-void MostrarSolucion(char iMatJugador[N][N], int iMatBuscaminas[N][N], int iRen, int iCol, string sNombreJugador, int iIntentos)
+void MostrarSolucion(char iMatJugador[M][N], int iMatBuscaminas[M][N], int iRen, int iCol, string sNombreJugador, int iIntentos)
 {
     iMatJugador[iRen][iCol] = 'X';
     ImprimirMatriz(iMatJugador);
     cout << endl << endl;
     cout << "Perdiste " << sNombreJugador << " en " << iIntentos << " intentos." << endl << endl;
-    for(int i=0; i<N; i++)
+    for(int i=0; i<M; i++)
     {
         for(int j=0; j<N; j++)
         {
@@ -126,11 +138,11 @@ void Juego()
 {
     string sNombreJugador;
     int iPassword = 12345;
-    int iMatBuscaminas[N][N];
-    char iMatJugador[N][N];
+    int iMatBuscaminas[M][N];
+    char iMatJugador[M][N];
     int iRenAtaque, iColAtaque, iRenMarca, iColMarca;
     char cDecision = 'X', cMovimiento;
-    bool bSalir = true, iRecorridos[N][N];;
+    bool bSalir = true, iRecorridos[M][N];;
 
     InicializarMatrices(iMatBuscaminas, iMatJugador, iRecorridos);
     GenerarMinasRandom(iMatBuscaminas);
@@ -152,7 +164,7 @@ void Juego()
         }
         ImprimirMatriz(iMatJugador);
         cout << endl << endl;
-        if(iIntentos == (N*N)-Bombas) //64 casillas - 10 bombas = todas las casillas visitadas
+        if(iIntentos == (M*N)-Bombas) //64 casillas - 10 bombas = todas las casillas visitadas
         {
             cout << endl << "Ganaste " << sNombreJugador << " en " << iIntentos << " intentos." << endl << endl;
             do{
@@ -176,7 +188,7 @@ void Juego()
                         system("cls");
                         ImprimirMatriz(iMatBuscaminas);
                     }
-                }while(iRenMarca < 1 || iRenMarca > 8);
+                }while(iRenMarca < 1 || iRenMarca > M);
                 do{
                     cout << "Columna: ";
                     cin >> iColMarca;
@@ -185,7 +197,7 @@ void Juego()
                         system("cls");
                         ImprimirMatriz(iMatBuscaminas);
                     }
-                }while(iColMarca < 1 || iColMarca > 8);
+                }while(iColMarca < 1 || iColMarca > N);
                 iRenMarca--;
                 iColMarca--;
                 Marcar(iMatJugador, iRecorridos, iRenMarca, iColMarca);//Marcar o desmarcar casilla
@@ -202,7 +214,7 @@ void Juego()
                         system("cls");
                         ImprimirMatriz(iMatBuscaminas);
                     }
-                }while(iRenAtaque < 1 || iRenAtaque > 8);
+                }while(iRenAtaque < 1 || iRenAtaque > M);
                 do{
                     cout << "Columna: ";
                     cin >> iColAtaque;
@@ -211,7 +223,7 @@ void Juego()
                         system("cls");
                         ImprimirMatriz(iMatBuscaminas);
                     }
-                }while(iColAtaque < 1 || iColAtaque > 8);
+                }while(iColAtaque < 1 || iColAtaque > N);
 
                 iRenAtaque--;//Se resta para que sea en numeros de computadora de la matriz
                 iColAtaque--;
@@ -236,7 +248,10 @@ void Juego()
             }
         }
         if(cDecision == 'N')//Salir del juego
+        {
             bSalir = false;
+            system("cls");
+        }
     }
 }
 
